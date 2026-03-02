@@ -74,7 +74,7 @@ trees = analyzer.parse(sentence)
 
 for tree in trees:
     print(tree, type(tree))
-    print('\nBosquejo del árbol:\n')
+    print("\nBosquejo del árbol:\n")
     print(tree.pretty_print(unicodelines=True, nodedist=1))
 
 # ## Perspectiva estadística
@@ -106,10 +106,7 @@ V    -> 'come'    [1.0]
 """)
 viterbi_parser = nltk.ViterbiParser(taco_grammar)
 
-sentences = [
-    "Juan come unos tacos",
-    "unos tacos Juan come"
-]
+sentences = ["Juan come unos tacos", "unos tacos Juan come"]
 for sent in sentences:
     for tree in viterbi_parser.parse(sent.split()):
         print(tree)
@@ -138,7 +135,7 @@ for chunk in doc.noun_chunks:
     print("root::", chunk.root.text)
     print("root dep::", chunk.root.dep_)
     print("root head::", chunk.root.head.text)
-    print("="*10)
+    print("=" * 10)
 
 for token in doc:
     print("token::", token.text)
@@ -147,7 +144,7 @@ for token in doc:
     print("head POS::", token.head.pos_)
     print("CHILDS")
     print([child for child in token.children])
-    print("="*10)
+    print("=" * 10)
 
 # #### Named Entity Recognition (NER)
 
@@ -157,8 +154,11 @@ for token in doc:
 
 from datasets import load_dataset
 
+# +
 from huggingface_hub import login
+
 login()
+# -
 
 # !hf auth whoami
 
@@ -174,10 +174,10 @@ random.seed(42)
 corpus = random.choices(data["train"]["text"], k=3)
 docs = list(nlp.pipe(corpus))
 for j, doc in enumerate(docs):
-    print(f"DOC #{j+1}")
+    print(f"DOC #{j + 1}")
     doc.user_data["title"] = " ".join(doc.text.split()[:10])
     for i, ent in enumerate(doc.ents):
-        print(" -"*10, f"Entity #{i}")
+        print(" -" * 10, f"Entity #{i}")
         print(f"\tTexto={ent.text}")
         print(f"\tstart/end={ent.start_char}-{ent.end_char}")
         print(f"\tLabel={ent.label_}")
@@ -192,7 +192,7 @@ displacy.render(docs, style="ent")
 # Bibliotecas
 from collections import Counter
 import matplotlib.pyplot as plt
-#plt.rcParams['figure.figsize'] = [10, 6]
+# plt.rcParams['figure.figsize'] = [10, 6]
 
 mini_corpus = """Humanismo es un concepto polisémico que se aplica tanto al estudio de las letras humanas, los
 estudios clásicos y la filología grecorromana como a una genérica doctrina o actitud vital que
@@ -218,8 +218,9 @@ len(vocabulary)
 def get_frequencies(vocabulary: Counter, n: int) -> list:
     return [_[1] for _ in vocabulary.most_common(n)]
 
+
 def plot_frequencies(frequencies: list, title="Freq of words", log_scale=False):
-    x = list(range(1, len(frequencies)+1))
+    x = list(range(1, len(frequencies) + 1))
     plt.plot(x, frequencies, "-v")
     plt.xlabel("Freq rank (r)")
     plt.ylabel("Freq (f)")
@@ -242,7 +243,9 @@ plot_frequencies(frequencies, log_scale=True)
 
 # Utilizaremos un corpus en español, entre más grande mejor.
 
-dataset = load_dataset("wikimedia/wikipedia", "20231101.es", split="train", streaming=True)
+dataset = load_dataset(
+    "wikimedia/wikipedia", "20231101.es", split="train", streaming=True
+)
 
 # +
 # dataset?
@@ -257,6 +260,7 @@ corpus = dataset.take(10000)
 
 # +
 import re
+
 
 def normalize_corpus(example):
     example["text"] = re.sub(r"[\W]", " ", example["text"])
@@ -284,8 +288,6 @@ words = count_words(corpus)
 
 words.most_common(10)
 
-# +
-import pandas as pd
 
 def counter_to_pandas(counter: Counter) -> pd.DataFrame:
     df = pd.DataFrame.from_dict(counter, orient="index").reset_index()
@@ -295,8 +297,6 @@ def counter_to_pandas(counter: Counter) -> pd.DataFrame:
     return df
 
 
-# -
-
 corpus_freqs = counter_to_pandas(words)
 
 corpus_freqs.head(10)
@@ -304,15 +304,15 @@ corpus_freqs.head(10)
 corpus_freqs[corpus_freqs["word"] == "barriga"]
 
 corpus_freqs["count"].plot(marker="o", legend=False)
-plt.title('Ley de Zipf en el CREA')
-plt.xlabel('rank')
-plt.ylabel('freq')
+plt.title("Ley de Zipf")
+plt.xlabel("rank")
+plt.ylabel("freq")
 plt.show()
 
-corpus_freqs['count'].plot(loglog=True, legend=False)
-plt.title('Ley de Zipf en el CREA (log-log)')
-plt.xlabel('log rank')
-plt.ylabel('log frecuencia')
+corpus_freqs["count"].plot(loglog=True, legend=False)
+plt.title("Ley de Zipf (log-log)")
+plt.xlabel("log rank")
+plt.ylabel("log frecuencia")
 plt.show()
 
 # - Notamos que las frecuencias entre lenguas siguen un patrón
@@ -347,30 +347,35 @@ plt.show()
 from scipy.optimize import minimize
 
 ranks = np.array(corpus_freqs.index) + 1
-frecs = np.array(corpus_freqs['count'])
+frecs = np.array(corpus_freqs["count"])
 
 # Inicialización
 a0 = 1
 
 # Función de minimización:
-func = lambda a: sum((np.log(frecs)-(np.log(frecs[0])-a*np.log(ranks)))**2)
+func = lambda a: sum((np.log(frecs) - (np.log(frecs[0]) - a * np.log(ranks))) ** 2)
 
 # Apliando minimos cuadrados
 a_hat = minimize(func, a0).x[0]
 
-print('alpha:', a_hat, '\nMSE:', func(a_hat))
+print("alpha:", a_hat, "\nMSE:", func(a_hat))
 
 
 # -
 
 def plot_generate_zipf(alpha: np.float64, ranks: np.array, freqs: np.array) -> None:
-    plt.plot(np.log(ranks),  np.log(freqs[0]) - alpha*np.log(ranks), color='r', label='Aproximación Zipf')
+    plt.plot(
+        np.log(ranks),
+        np.log(freqs[0]) - alpha * np.log(ranks),
+        color="r",
+        label="Aproximación Zipf",
+    )
 
 
 plot_generate_zipf(a_hat, ranks, frecs)
-plt.plot(np.log(ranks),np.log(frecs), color='b', label='Distribución CREA')
-plt.xlabel('log ranks')
-plt.ylabel('log frecs')
+plt.plot(np.log(ranks), np.log(frecs), color="b", label="Distribución CREA")
+plt.xlabel("log ranks")
+plt.ylabel("log frecs")
 plt.legend(bbox_to_anchor=(1, 1))
 plt.show()
 
@@ -396,10 +401,171 @@ plt.show()
 # - **TOKENS**: Número total de palabras dentro del texto (incluidas repeticiones)
 # - **TIPOS**: Número total de palabras únicas en el texto
 
-# #### 📊 Ejercicio: Muestra el plot de tokens vs types para el corpus CREA
+# #### 📊 Ejercicio: Muestra el plot de tokens vs types
 #
 # **HINT:** Obtener tipos y tokens acumulados
 
-# ## Diversidad lingũística 
+# ## Diversidad lingüística 
+
+# ### [Glottolog](https://glottolog.org/)
+
+# Glottolog es uncatálogo de las lenguas, familias lingúísticas y dialectos del mundo (identificados como *languids*). Asigna a cada *languoid* un código único y estable. Los *languids* son organizados por clasificaciones genealógicas (un árbol de Glottolog) que está basado en archivos de investigaciones historicas comparables.
+#
+# Podemos [descargar los datos](https://glottolog.org/meta/downloads) de la plataforma gracias a su [licencia libre](https://creativecommons.org/licenses/by/4.0/). Para está práctica utilizarmos el archivo [`languages_and_dialects_geo.csv`](https://cdstar.eva.mpg.de//bitstreams/EAEA0-2198-D710-AA36-0/languages_and_dialects_geo.csv)
+
+# Se asume que se ha descargado el archivo y que se encuentra en la carpeta data/
+languages = pd.read_csv("data/languages_and_dialects_geo.csv")
+
+languages.head()
+
+# +
+min_lat = 14.5
+max_lat = 32.7
+min_long = -118.4
+max_long = -86.8
+
+# Filtramos el dataset
+mexico_languages = languages[
+    (languages["latitude"] >= min_lat)
+    & (languages["latitude"] <= max_lat)
+    & (languages["longitude"] >= min_long)
+    & (languages["longitude"] <= max_long)
+]
+mexico_languages
+
+# +
+import plotly.express as px
+
+fig = px.scatter_map(
+    mexico_languages,
+    lat="latitude",
+    lon="longitude",
+    hover_name="name",
+    zoom=4,
+    height=600,
+)
+
+fig.update_layout(mapbox_style="open-street-map")
+
+fig.show()
+# -
+
+languoids = pd.read_csv("data/languoid.csv")
+
+# +
+# Reconstrucción de linajes usando grafos locales (languoid.csv)
+
+languoids_dict = languoids.set_index('id').to_dict('index')
+
+def reconstruir_linaje(glottocode):
+    """Sube por el árbol genealógico desde la lengua hasta la familia raíz."""
+    linaje = []
+    current_id = glottocode
+    
+    # Mientras el ID actual exista y no sea nulo (NaN)
+    while pd.notna(current_id) and current_id in languoids_dict:
+        nodo = languoids_dict[current_id]
+        
+        # Filtramos lenguas artificiales o "bookkeeping"
+        if nodo.get('bookkeeping') or nodo.get('name') == 'Unclassifiable':
+            return "Unclassifiable"
+            
+        # Insertamos el nombre al inicio de la lista para mantener el orden (Raíz -> Lengua)
+        linaje.insert(0, str(nodo['name']))
+        
+        # Subimos al nodo padre
+        current_id = nodo['parent_id']
+        
+    return " > ".join(linaje)
+
+# Aplicamos la función a nuestras lenguas de México
+mexico_languages = mexico_languages.copy()
+mexico_languages['tree'] = mexico_languages['glottocode'].apply(reconstruir_linaje)
+
+# Filtramos las que no se pudieron clasificar
+df = mexico_languages[~mexico_languages['tree'].isin(['', "Unclassifiable"])].copy()
+
+# Extraemos la familia lingüística (la primera palabra del linaje)
+df['Family'] = df['tree'].str.split().str[0]
+df.set_index("glottocode", inplace=True)
+df.head()
+# -
+
+p = df[df["name"] == "Huichol"]
+p["tree"]["huic1243"]
+
+# +
+# Cálculo de similitud genealógica y Heatmap
+import plotly.graph_objects as go
+
+def longest_common_prefix(str1, str2):
+    """Calcula el ratio del prefijo común más largo entre dos linajes."""
+    min_length = min(len(str1), len(str2))
+    common_prefix = ""
+
+    for i in range(min_length):
+        if str1[i] == str2[i]:
+            common_prefix += str1[i]
+        else:
+            break
+            
+    # Normalizamos el resultado
+    return len(common_prefix) / min_length if min_length > 0 else 0
+
+# Creamos la matriz de distancias vacía
+n = len(df)
+distance_matrix = pd.DataFrame(index=df.index, columns=df.index, dtype=float)
+
+# Poblamos la matriz calculando la similitud por pares
+for i in range(n):
+    for j in range(i, n):
+        distance = longest_common_prefix(df['tree'].iloc[i], df['tree'].iloc[j])
+        distance_matrix.iloc[i, j] = distance
+        distance_matrix.iloc[j, i] = distance
+
+distance_df = pd.DataFrame(distance_matrix.values, index=df.index, columns=df.index)
+
+# Ordenamos las lenguas por familia para una mejor visualización en el mapa de calor
+ordered_languages = df.sort_values('Family').index
+ordered_similarity_df = distance_df.reindex(index=ordered_languages, columns=ordered_languages)
+# -
+
+ordered_similarity_df.head()
+
+# +
+# Mapeamos los glottocodes a los nombres reales de las lenguas para las etiquetas
+labels = ordered_similarity_df.columns.map(lambda x: df.loc[x, 'name'])
+
+# Generamos el mapa de calor
+fig = go.Figure(data=go.Heatmap(z=ordered_similarity_df, x=labels, y=labels))
+fig.update_layout(title='Matriz de Similitud Genealógica',
+                  xaxis={'side': 'top'},
+                  width=1200, height=1200)
+fig.show()
+# -
+
+# ## Práctica 3: Propiedades estadísticas del lenguaje y Diversidad
+#
+# ### Fecha de entrega: 17 de Marzo de 2026 11:59pm 
+#
+# **1. Verificación empírica de la Ley de Zipf**
+#
+# Verificar si la ley de Zipf se cumple en un lenguaje artificial creado por ustedes.
+# * *Instrucciones:* Creen un script que genere un texto aleatorio seleccionando caracteres al azar de un alfabeto definido. **Nota:** Asegúrense de incluir el carácter de "espacio" en su alfabeto para que el texto se divida en "palabras" de longitudes variables.
+# * Obtengan las frecuencias de este texto artificial y generen las gráficas de rango vs. frecuencia (en escala lineal y logarítmica).
+# * ¿Se aproxima a la ley de Zipf? Justifiquen su respuesta comparándolo con el comportamiento del corpus visto en clase.
+#
+# **2. Desempeño de NER en distintos dominios (Out-of-domain)**
+# Explorar la plataforma [Hugging Face Datasets](https://huggingface.co/datasets) y elegir documentos en Español provenientes de al menos 3 dominios muy distintos (ej. noticias, artículos médicos, tweets/redes sociales, foros legales).
+# * Realizar Reconocimiento de Entidades Nombradas (NER) en muestras de cada dominio utilizando spaCy o la herramienta de su preferencia.
+# * Mostrar una distribución de frecuencias de las etiquetas (PER, ORG, LOC, etc.) más comunes por dominio.
+# * **Análisis:** Incluyan comentarios críticos sobre el desempeño observado. ¿En qué dominio el modelo cometió más errores y a qué creen que se deba estadísticamente?
+#
+# **3. Cuantificando la diversidad genealógica (Glottolog)**
+# Utilizando el código visto en el laboratorio para reconstruir linajes y calcular distancias con el prefijo común más largo (Longest Common Prefix):
+# * Seleccionen dos familias lingüísticas presentes en México que tengan al menos 5 lenguas registradas en el dataset (por ejemplo, Uto-Aztecan, Mayan, Otomanguean). 
+# * Generen la matriz de similitud y el mapa de calor (Heatmap) para cada familia.
+# * Calculen el **promedio general de similitud** de cada matriz (omitiendo la diagonal principal donde la lengua se compara consigo misma). 
+# * **Conclusión:** ¿Qué familia lingüística presenta mayor diversidad interna (es decir, un promedio de similitud más bajo)?
 
 
